@@ -1,2 +1,11 @@
 [project]
 name = "yt-sub"
+
+dependencies = [
+    "fastapi",
+    "requests",
+    "schedule",
+    "sqlalchemy",
+    "uvicorn",
+    "yt-dlp",
+]
