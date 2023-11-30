@@ -4,6 +4,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir requests yt-dlp
 RUN apk add --no-cache ffmpeg
 WORKDIR /app
-COPY bin/downloader.py .
+COPY src/yt_sub/utils/downloader.py .
 RUN chmod a+x downloader.py
 CMD /app/downloader.py

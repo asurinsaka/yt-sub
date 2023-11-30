@@ -1,0 +1,5 @@
+fastapi
+sqlalchemy
+yt-dlp
+uvicorn
+requests

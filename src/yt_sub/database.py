@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATA_DIR = Path(os.getenv("DATA_DIR", "../../data"))
+DATA_DIR = Path(os.getenv("DATA_DIR", "data"))
 
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DATA_DIR}/sql_app.db"
 

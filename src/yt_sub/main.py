@@ -2,13 +2,14 @@ from urllib import parse
 from multiprocessing import Process
 
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-import crud
-import models
-import schemas
-from database import engine, SessionLocal
-from bin.downloader import download_videos
+from . import crud
+from . import models
+from . import schemas
+from .database import engine, SessionLocal
+from yt_sub.utils.downloader import download_videos
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -16,6 +17,18 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()
@@ -26,8 +39,15 @@ def get_db():
 
 
 @app.get("/")
-async def root():
-    return {"message": "Hello World"}
+async def root(db: Session = Depends(get_db)):
+    play_lists = crud.get_playlists(db)
+    return play_lists
+
+
+@app.get("/playlist")
+async def get_playlists(db: Session = Depends(get_db)):
+    play_lists = crud.get_playlists(db)
+    return play_lists
 
 
 @app.get("/playlist/{playlist_id}")
@@ -38,7 +58,7 @@ async def get_playlist(playlist_id: str, db: Session = Depends(get_db)):
     return play_list
 
 
-@app.post("/playlist/")
+@app.post("/playlist")
 async def create_playlist(url_item: schemas.URLItem, db: Session = Depends(get_db)):
     url = url_item.url
     parsed = parse.urlparse(url)
@@ -52,13 +72,13 @@ async def create_playlist(url_item: schemas.URLItem, db: Session = Depends(get_d
     return crud.create_playlist(db, url)
 
 
-@app.post("/playlist/{playlist_id}/get_videos/")
+@app.get("/playlist/{playlist_id}/videos")
 async def get_videos_for_playlist(playlist_id: str, db: Session = Depends(get_db)):
     videos = crud.get_video_info_from_playlist(db, playlist_id)
     return videos
 
 
-@app.put("/video/{video_id}/", response_model=schemas.Video)
+@app.put("/video/{video_id}", response_model=schemas.Video)
 async def update_video(video_id: str, video_item: schemas.Video, db: Session = Depends(get_db)):
     video = crud.get_video_by_id(db, video_id)
     if not video:

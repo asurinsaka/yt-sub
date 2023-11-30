@@ -1,6 +1,6 @@
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, Integer
 
-from database import Base
+from .database import Base
 
 
 class PlayList(Base):
@@ -16,7 +16,9 @@ class Video(Base):
 
     id = Column(String, primary_key=True, index=True)
     title = Column(String, index=True)
+    upload_date = Column(Integer)
     url = Column(String, index=True)
     status = Column(String)
     location = Column(String)
     playlist_id = Column(String, ForeignKey("playlist.id"))
+

@@ -12,3 +12,4 @@ class Video(BaseModel):
     status: str
     location: str | None = None
     playlist_id: str | None = None
+    upload_date: int | None = None

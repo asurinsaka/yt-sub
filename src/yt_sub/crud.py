@@ -1,10 +1,14 @@
-from typing import Optional
+from typing import Optional, List, Type
 
 import yt_dlp
-import models
+from . import models
 from sqlalchemy.orm import Session
 
-import schemas
+from . import schemas
+
+
+def get_playlists(db: Session) -> list[Type[models.PlayList]]:
+    return db.query(models.PlayList).all()
 
 
 def create_playlist(db: Session, url: str):
@@ -18,7 +22,6 @@ def create_playlist(db: Session, url: str):
     db.commit()
     db.refresh(playlist)
     return playlist
-
 
 
 def request_playlist_info(url: str, total_videos: int = 0) -> models.PlayList:
@@ -40,7 +43,7 @@ def get_playlist_by_id(db: Session, list_id: str) -> models.PlayList:
 
 def get_video_info_from_playlist(db: Session, list_id: str):
     playlist = get_playlist_by_id(db, list_id)
-    playlist_info = request_playlist_info(playlist.url, 5)
+    playlist_info = request_playlist_info(playlist.url, 10)
     res = []
     for video_info in playlist_info['entries']:
         video = db.query(models.Video).get(video_info['id'])
@@ -53,6 +56,7 @@ def get_video_info_from_playlist(db: Session, list_id: str):
             url=video_info['webpage_url'],
             status="not_downloaded",
             playlist_id=playlist.id,
+            upload_date=int(video_info['upload_date'])
         )
         db.add(video)
         db.commit()
@@ -75,8 +79,6 @@ def update_video(db: Session, video_id: str, video: schemas.Video):
     db.commit()
     db.refresh(video_entry)
     return video_entry
-
-
 
 
 def get_videos(db: Session, status: Optional[str] = None):
